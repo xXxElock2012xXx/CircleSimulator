@@ -8,23 +8,30 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Time.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 #include <chrono>
 #include <exception>
 #include <iostream>
+#include <vector>
 
 #include "Entity.hpp"
 
 constexpr double kFrameTime = 1.F / 60.F;
+constexpr int kEntityCount = 1;
 
 class Engine {
  public:
   explicit Engine()
-      : window_(sf::VideoMode::getDesktopMode(), "Physics simulation", sf::Style::Default),
-        circle_(sf::Vector2f(window_.getSize() / 2U), texture_),
-        circle2_(sf::Vector2f(window_.getSize() / 2U + sf::Vector2u(0, 100)), texture_) {
+      : window_(sf::VideoMode::getDesktopMode(), "Physics simulation", sf::Style::Default) {
     window_.setFramerateLimit(60);
     time_ = std::chrono::steady_clock::now();
+
+    entities_.reserve(kEntityCount);
+    for (int i = 0; i < kEntityCount; i++) {
+      entities_.emplace_back(sf::Vector2f(window_.getSize() / 2U), texture_);
+    }
   }
 
   void Setup() {
@@ -51,13 +58,20 @@ class Engine {
     while (const std::optional event = window_.pollEvent()) {
       if (event->is<sf::Event::Closed>()) {
         window_.close();
+
+      } else {
+        if (const auto* key_pressed = event->getIf<sf::Event::KeyPressed>()) {
+          if (key_pressed->scancode == sf::Keyboard::Scancode::Escape) {
+            window_.close();
+          }
+        }
       }
     }
   }
 
   bool LoadResource(const std::string &path) {
     if (!texture_.loadFromFile(path, false, sf::IntRect{{0, 0}, {96, 96}})) {
-      std::cout << "fuck";
+      std::cout << "could not find resource at path" << path;
       std::terminate();
     } else {
       return true;
@@ -65,26 +79,26 @@ class Engine {
   }
 
   void Update(const double elapsed_time) {
-    circle_.Update(static_cast<float>(elapsed_time), 1);
-    circle2_.Update(static_cast<float>(elapsed_time), 2);
-
-    // std::cout << "position:" << circle_.circle_.getPosition().x << " "
-    //           << circle_.circle_.getPosition().y << "\n";
+    for (Entity &ent : entities_) {
+      ent.Update(static_cast<float>(elapsed_time));
+      ent.CheckBorderCollision(window_);
+    }
   }
 
   void Render() {
     window_.clear(sf::Color(0x93a832));
 
-    circle_.Draw(window_);
-    circle2_.Draw(window_);
+    for (Entity &ent : entities_) {
+      ent.Draw(window_);
+    }
 
     window_.display();
   }
 
   sf::RenderWindow window_;
   sf::Texture texture_;
-  Entity circle_;
-  Entity circle2_;
+
+  std::vector<Entity> entities_;
 
   std::chrono::steady_clock::time_point time_;
 };
