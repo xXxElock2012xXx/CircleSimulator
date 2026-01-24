@@ -1,0 +1,6 @@
+[submodule "libs/box2d"]
+	path = libs/box2d
+	url = git@github.com:erincatto/box2d.git
+[submodule "libs/box2dcpp"]
+	path = libs/box2dcpp
+	url = git@github.com:HolyBlackCat/box2cpp.git
