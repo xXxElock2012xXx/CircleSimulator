@@ -18,9 +18,10 @@ FetchContent_MakeAvailable(SFML)
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp include/*.hpp)
 
 
+add_subdirectory(libs)
+
 add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES})
 target_include_directories(${EXECUTABLE_NAME} PRIVATE include/)
 target_compile_options(${EXECUTABLE_NAME} PRIVATE -Wall -Wextra -Werror -pedantic -fno-exceptions)
-target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_17)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE SFML::Graphics)
-add_subdirectory(libs)
+target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_20)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE SFML::Graphics box2dcpp)
