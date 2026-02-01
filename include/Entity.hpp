@@ -9,21 +9,17 @@
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
 
-namespace {
-sf::CircleShape debug_circle;
-}
-
 class Entity {
  public:
   explicit Entity(sf::Vector2f position, const sf::Texture &texture) : texture_(texture) {
     circle_.setPosition(position);
     circle_.setPointCount(100);
     circle_.setRadius(50);
-    debug_circle.setPointCount(100);
-    debug_circle.setRadius(25);
-    debug_circle.setFillColor(sf::Color::Transparent);
-    debug_circle.setOutlineColor(sf::Color::Magenta);
-    debug_circle.setOutlineThickness(5);
+    debug_circle_.setPointCount(100);
+    debug_circle_.setRadius(25);
+    debug_circle_.setFillColor(sf::Color::Transparent);
+    debug_circle_.setOutlineColor(sf::Color::Magenta);
+    debug_circle_.setOutlineThickness(5);
     circle_.setOrigin({25, 25});
   }
 
@@ -74,9 +70,9 @@ class Entity {
   void Draw(sf::RenderWindow &window) const {
     sf::Sprite sprite(texture_);
     sprite.setPosition(circle_.getPosition());
-    debug_circle.setPosition(circle_.getPosition() + circle_.getOrigin());
+    debug_circle_.setPosition(circle_.getPosition() + circle_.getOrigin());
     window.draw(sprite);
-    window.draw(debug_circle);
+    window.draw(debug_circle_);
   }
 
  private:
@@ -84,6 +80,7 @@ class Entity {
   const sf::Texture &texture_;
   sf::Vector2f velocity_ = {100, 0};
   sf::Vector2f acceleration_ = {0, 30};
+  static sf::CircleShape debug_circle_;
 };
 
 #endif  //  ENTITY_HPP_

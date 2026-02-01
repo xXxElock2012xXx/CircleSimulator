@@ -10,95 +10,48 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/Window.hpp>
+#include <SFML/Window/WindowBase.hpp>
 #include <SFML/Window/WindowEnums.hpp>
 #include <chrono>
-#include <exception>
-#include <iostream>
-#include <vector>
 
-#include "Entity.hpp"
+#include "Platform.hpp"
+#include "ShapeDrawable.hpp"
+#include "box2d/id.h"
+#include "box2d/types.h"
 
 constexpr double kFrameTime = 1.F / 60.F;
 constexpr int kEntityCount = 1;
+constexpr int kSubStepCount = 4;
 
 class Engine {
  public:
-  explicit Engine()
-      : window_(sf::VideoMode::getDesktopMode(), "Physics simulation", sf::Style::Default) {
-    window_.setFramerateLimit(60);
-    time_ = std::chrono::steady_clock::now();
+  explicit Engine();
+  ~Engine();
+  Engine(const Engine &) = delete;
+  Engine &operator=(const Engine &) = delete;
+  Engine(Engine &&) = delete;
+  Engine &operator=(Engine &&) = delete;
 
-    entities_.reserve(kEntityCount);
-    for (int i = 0; i < kEntityCount; i++) {
-      entities_.emplace_back(sf::Vector2f(window_.getSize() / 2U), texture_);
-    }
-  }
-
-  void Setup() {
-    LoadResource("/home/teapa/data/CircleSimulator/Sheep.png");
-  }
-
-  void Run() {
-    while (window_.isOpen()) {
-      std::chrono::steady_clock::time_point delta_time = std::chrono::steady_clock::now();
-
-      const double elapsed_time = std::chrono::duration<double>(delta_time - time_).count();
-
-      if (elapsed_time > kFrameTime) {
-        time_ = delta_time;
-        HandleInput();
-        Update(elapsed_time);
-        Render();
-      }
-    }
-  }
+  void Setup();
+  void Run();
 
  private:
-  void HandleInput() {
-    while (const std::optional event = window_.pollEvent()) {
-      if (event->is<sf::Event::Closed>()) {
-        window_.close();
+  void HandleInput();
 
-      } else {
-        if (const auto* key_pressed = event->getIf<sf::Event::KeyPressed>()) {
-          if (key_pressed->scancode == sf::Keyboard::Scancode::Escape) {
-            window_.close();
-          }
-        }
-      }
-    }
-  }
+  bool LoadResource(const std::string &path);
 
-  bool LoadResource(const std::string &path) {
-    if (!texture_.loadFromFile(path, false, sf::IntRect{{0, 0}, {96, 96}})) {
-      std::cout << "could not find resource at path" << path;
-      std::terminate();
-    } else {
-      return true;
-    }
-  }
+  void Update(float elapsed_time);
 
-  void Update(const double elapsed_time) {
-    for (Entity &ent : entities_) {
-      ent.Update(static_cast<float>(elapsed_time));
-      ent.CheckBorderCollision(window_);
-    }
-  }
+  void Render();
 
-  void Render() {
-    window_.clear(sf::Color(0x93a832));
-
-    for (Entity &ent : entities_) {
-      ent.Draw(window_);
-    }
-
-    window_.display();
-  }
+  b2WorldDef world_def_;
+  b2WorldId world_id_;
+  Platform platform_;
+  ShapeDrawable shape_;
 
   sf::RenderWindow window_;
   sf::Texture texture_;
-
-  std::vector<Entity> entities_;
 
   std::chrono::steady_clock::time_point time_;
 };

@@ -1,0 +1,5 @@
+If:                               # Apply this config conditionally
+  PathMatch: [.*\.h, .*\.c]       # to all headers OR c files
+  PathExclude: libs/.*        # except all files within "internal" 
+CompileFlags:
+  Add: [-DEXTERNAL]
